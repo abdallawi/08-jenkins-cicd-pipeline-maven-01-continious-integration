@@ -29,7 +29,7 @@ pipeline{
                     junit '**/target/surefire-reports/TEST-*.xml' // archiver les rapport de test
                 }
                 
-            }
+        }
 
         stage("Static Code Analysis (SonarQube)"){
                 steps{
@@ -40,7 +40,7 @@ pipeline{
              	        }  
                 }
                 
-            }
+        }
         
         stage("Checking the Quality Gate") {
                   steps {
@@ -50,7 +50,15 @@ pipeline{
                           // true = set pipeline to UNSTABLE, false = don't
                           waitForQualityGate abortPipeline: true
                       }
-                  }
+        }
+
+        stage("Integration Test (Maven/JUnit)"){
+            steps{
+                echo "====++++  Integration Test (Maven/JUnit) ++++===="
+                sh "mvn clean verify -DskiptTests=true"    // Do not repeat the unit tests, they have been already done
+                junit "**/target/failsafe-reports/*.xml" // Archive the test reports
+            }         
+        }
 
     }
     post{
