@@ -55,7 +55,7 @@ pipeline{
         stage("Integration Test (Maven/JUnit)"){
             steps{
                 echo "====++++  Integration Test (Maven/JUnit) ++++===="
-                sh "mvn clean verify -DskiptTests=true"    // Do not repeat the unit tests, they have been already done
+                sh "mvn clean verify -Dsurefire.skip=true"    // Do not repeat the unit tests, they have been already done
                 junit "**/target/failsafe-reports/*.xml" // Archive the test reports
             }         
         }
