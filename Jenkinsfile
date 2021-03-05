@@ -104,6 +104,45 @@ pipeline{
                     }
                 }
             }
+             // Start the Staging Server
+        stage ('Start the application under test ') {
+	        steps {
+	              sh "docker run --name staging_server -p 9090:8080  -d tomcat:9.0"
+	             }
+	    }
+
+        //DEploy the app on the Staging Server
+        stage ('Deploy the app on the staging ') {
+	        steps {
+                // TODO  - GET THE war artifact from Nexus
+	            sh "docker cp $WORKSPACE/target/greetings-0.1-SNAPSHOT.war staging_server:/usr/local/tomcat/webapps/hello.war"
+            }
+	    }
+
+        
+        // Do performance tests on the app
+	    stage('Performance Testing'){
+	   	   
+	   	    steps {          
+               sh "docker run -d --link staging_server:staging_server  -v ${MOUNTPATH}://jmeter   egaillardon/jmeter -n -t Hello_World_Test_Plan.jmx -l //jmeter/test_report.jtl"
+      
+         	  }
+	    }
+        // Publish the test reports
+	     stage ('Publish the performance reports') {
+	      steps {
+	        perfReport sourceDataFiles: "$WORKSPACE/src/pt/test_report.jtl"
+	       }
+	    }
+	    
+        // TODO : Promote the app On NEXUS from the SNAPHOT -> RELEASE
+         // STOP the Staging Server
+	    stage ('Clean Up : Stop the application under test') {	          
+           steps {
+	           sh "docker stop   staging_server && docker rm  staging_server "
+               echo " STOPPED The Tomcat app Under test"
+            }
+	    }
         }
 
     }
