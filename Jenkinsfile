@@ -3,7 +3,7 @@
  */
 
 
- // Clone from Git
+ // Clone from Gits
  // Build and Unit Test (Maven/Junit)
  // Static Code Analysis (SonarQube)
  // Integration Test (Maven/JUniy) 
@@ -27,6 +27,17 @@ pipeline{
                 steps{
                     sh 'mvn clean package'
                     junit '**/target/surefire-reports/TEST-*.xml' // archiver les rapport de test
+                }
+                
+            }
+
+        stage("Static Code Analysis (SonarQube)"){
+                steps{
+                    withSonarQubeEnv('my_sonarqube_in_docker') {                         
+             	      
+             	          sh "mvn clean verify -DskipTests=true  sonar:sonar -Dsonar.host.url=http://host.docker.internal:9000   -Dsonar.projectName=08-jenkins-cicd-pipeline-maven-01-continious-integration -Dsonar.projectKey=07-static-code-analysis-sonarqube -Dsonar.projectVersion=$BUILD_NUMBER";
+                         
+             	        }  
                 }
                 
             }
